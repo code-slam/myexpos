@@ -1,0 +1,11 @@
+alias counter R0;
+counter =1;
+alias sum R1;
+sum=0;
+while(counter<=20) do
+	alias square R3;
+	square=counter*counter;
+	sum=sum+square;
+	counter=counter+1;
+endwhile;
+print sum;
