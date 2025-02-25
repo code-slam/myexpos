@@ -3,7 +3,7 @@ decl
 	int temp,num;
 enddecl
 begin
-	num=1;
+	num=0;
 	while(num<=100)do
 	
 		temp=exposcall("Write",-2,num);
