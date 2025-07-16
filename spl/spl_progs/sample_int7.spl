@@ -1,5 +1,6 @@
+//Write Operation
 //storing this so that os can show that this interrupt is not available 
-[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1]*16 + 9] = 5;
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1]*16 + 9] = INT_WRITE;
 alias uptr  R0;
 uptr= SP;
 //saving UPTR
@@ -21,12 +22,26 @@ if(filedesc != -2)
     retaddr = ([PTBR + 2*(uptr-1)/ 512])*512 + (uptr-1)%512;
 
     [retaddr] = -1;
-    print filedesc;
-    print "[sys_write]:X";
+    multipush(R0,R1,R2,R3);
+    //error
+    print "error";
+    multipop(R0,R1,R2,R3);
+    retaddr = ([PTBR + 2*(uptr-1)/ 512])*512 + (uptr-1)%512;
+    [retaddr] = 0;
 else
     alias word R5;
     word = [([PTBR + 2*(uptr-3)/512])*512 + (uptr-3)%512];
-    print word;
+    multipush(R0,R1,R2,R3,R5);
+
+    //terminal write function call
+    R1 = 3;  
+    R2 = [SYSTEM_STATUS_TABLE+1];
+    R3 = word;
+    call MOD_4;
+
+    multipop(R0,R1,R2,R3,R5);
+
+    
     alias retaddr R6;
     retaddr = ([PTBR + 2*(uptr-1)/ 512])*512 + (uptr-1)%512;
     [retaddr] = 0;

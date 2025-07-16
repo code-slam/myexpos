@@ -1,3 +1,4 @@
+//Context Switch Module
 //if the state of the process is created
 //  > state in process table is set to CREATED 
 //  > UPTR has been set to top of user stack
@@ -14,18 +15,42 @@ multipush(BP);
 
 alias i R7;
 alias flag R8;
+alias pentry R9;
 alias newPID R10;
+alias loop R11;
 flag=0;
-i =(1+currPID )% 16;
 
-while(i != currPID)do  
-  if( [ PROCESS_TABLE + i*16 + 4] == CREATED || [ PROCESS_TABLE + i*16 + 4] == READY) then
+if([SYSTEM_STATUS_TABLE+5] != 0) then
+  if([PROCESS_TABLE + SWAPPER_DAEMON*16 + 4] == WAIT_DISK) then
+    //choose idle
     flag = 1;
-    newPID = i; 
-    break;
+    newPID = IDLE_PROCESS;
+  else
+    flag =1;
+    newPID = SWAPPER_DAEMON;
   endif;
-  i=(i+1)%16;
-endwhile; 
+else
+  i =(1+currPID )% 16;
+  loop =0;
+  //pentry = PROCESS_TABLE + i*16 
+  while(loop < 16)do  
+    pentry = PROCESS_TABLE + i*16 ;
+    if( i == IDLE_PROCESS || i == SWAPPER_DAEMON) then
+      i=(i+1)%16;
+      loop=loop+1;
+      continue;
+    endif;
+    if( [pentry+6] != 1 ) then
+      if ([ pentry + 4] == CREATED || [ pentry+ 4] == READY) then
+        flag = 1;
+        newPID = i; 
+        break;
+      endif;
+    endif;
+    i=(i+1)%16;
+    loop=loop+1;
+  endwhile; 
+endif;
  
 if(flag == 0) then
   newPID = 0;
@@ -38,13 +63,13 @@ PTLR = [PROCESS_TABLE + newPID * 16 + 15];
 [SYSTEM_STATUS_TABLE + 1] = newPID;
 
 if([PROCESS_TABLE + newPID * 16 +4 ] == CREATED) then
+ 	BP = [[PROCESS_TABLE + newPID * 16+ 11]*512];
   SP = [PROCESS_TABLE + newPID * 16 + 13];
   [PROCESS_TABLE + newPID * 16 + 4] = RUNNING;
   [PROCESS_TABLE + newPID * 16 + 9] = 0;
-  breakpoint;
   ireturn;
 endif;
 
 [PROCESS_TABLE + newPID * 16 +4] = RUNNING;
 multipop(BP);
-return;	
+return;

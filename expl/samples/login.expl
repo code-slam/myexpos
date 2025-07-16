@@ -1,0 +1,29 @@
+int main(){
+decl
+	int temp;
+	str username;
+	str password;
+	int retval;
+
+enddecl
+begin
+	temp=exposcall("Write",-2,"Welcome");
+	while(1==1)do
+		temp=exposcall("Write",-2,"UserName:");
+		temp=exposcall("Read",-1,username);
+		temp=exposcall("Write",-2,"PassWord:");
+		temp=exposcall("Read",-1,password);
+		retval=exposcall("Login",username,password);
+		
+		if(retval==-1)then
+			temp=exposcall("Write",-2,"invalid");
+		else
+			if(retval==-1)then
+			temp=exposcall("Write",-2,"Denied");
+			endif;
+		
+		endif;
+	endwhile;
+	return 0;
+end
+}
